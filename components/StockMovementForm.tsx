@@ -14,12 +14,13 @@ interface ProductOption {
 
 interface StockMovementFormProps {
   products: ProductOption[];
+  defaultProductId?: string;
   action: (prevState: ActionResponse | null, formData: FormData) => Promise<ActionResponse>;
 }
 
-export function StockMovementForm({ products, action }: StockMovementFormProps) {
+export function StockMovementForm({ products, defaultProductId, action }: StockMovementFormProps) {
   const [state, formAction, isPending] = useActionState(action, null);
-  const [selectedProductId, setSelectedProductId] = useState<string>("");
+  const [selectedProductId, setSelectedProductId] = useState<string>(defaultProductId ?? "");
   const [movementType, setMovementType] = useState<"IN" | "OUT">("IN");
   const [quantity, setQuantity] = useState<number>(1);
 

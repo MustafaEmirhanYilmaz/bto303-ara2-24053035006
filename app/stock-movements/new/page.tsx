@@ -4,7 +4,14 @@ import prisma from "@/lib/prisma";
 import { StockMovementForm } from "@/components/StockMovementForm";
 import { createStockMovement } from "@/app/actions/stockActions";
 
-export default async function NewStockMovementPage() {
+interface NewStockMovementPageProps {
+  searchParams?: Promise<{ productId?: string }>;
+}
+
+export default async function NewStockMovementPage({ searchParams }: NewStockMovementPageProps) {
+  const resolvedParams = searchParams ? await searchParams : undefined;
+  const initialProductId = resolvedParams?.productId;
+
   let products: Array<{
     id: string;
     name: string;
@@ -64,6 +71,7 @@ export default async function NewStockMovementPage() {
         <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur">
           <StockMovementForm
             products={products}
+            defaultProductId={initialProductId}
             action={createStockMovement}
           />
         </div>
