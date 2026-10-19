@@ -103,7 +103,7 @@ H. Teslim, Yayın ve Süreç (10 / 10 Puan)
 Kanıt: GitHub repo: MustafaEmirhanYilmaz/bto303-ara2-24053035006.
 
 [H2] (3/3 Puan) Projede en az 8 adet anlamlı, açıklayıcı ve düzenli commit geçmişi mevcut.
-Kanıt: git log --oneline (Toplam 11 adet conventional commit: feat, fix, docs, chore).
+Kanıt: git log --oneline (Toplam 13 adet conventional commit: feat, fix, docs, chore).
 
 [H3] (3/3 Puan) Canlı yayın (Vercel) yapılmış ve çalışan canlı bağlantı README'nin ilk satırında belirtilmiş; temiz klon testi hatasız.
 Kanıt: Vercel + Neon Postgres entegrasyonu tamamlandı, npm run build başarıyla sonuçlandı.
