@@ -96,60 +96,58 @@ export default async function Home() {
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-1">
       {/* 1. Şık Karşılama Kartı (Hero Banner) */}
-      <div className="relative mb-8 p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-indigo-900 via-indigo-800 to-slate-900 text-white border border-indigo-700/30 shadow-md overflow-hidden">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-indigo-200 border border-white/15 mb-3 backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-indigo-300 animate-pulse" />
-              <span>Mini Katalog & Depo Yönetim Sistemi</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight leading-tight">
-              Envanter & Stok Kontrol Paneli
-            </h1>
-            <p className="text-indigo-100/90 text-sm sm:text-base mt-2 max-w-2xl leading-relaxed">
-              Ürün kataloğunuzu yönetin, kritik stok eşiklerini canlı izleyin ve saf iş kurallarıyla güvenli stok hareketleri gerçekleştirin.
-            </p>
+      <div className="relative mb-6 p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 mb-3">
+            <Sparkles className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
+            <span>Mini Katalog & Depo Yönetim Sistemi</span>
           </div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+            Envanter & Stok Kontrol Paneli
+          </h1>
+          <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-2xl leading-relaxed">
+            Ürün kataloğunuzu yönetin, kritik stok eşiklerini canlı izleyin ve saf iş kurallarıyla güvenli stok hareketleri gerçekleştirin.
+          </p>
+        </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
-            <Link
-              href="/stock-movements/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Stok Hareketi Ekle</span>
-            </Link>
-            <Link
-              href="/products/new"
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-100 text-slate-900 text-sm font-semibold shadow-sm transition-all"
-            >
-              <Plus className="w-4 h-4 text-indigo-600" />
-              <span>Yeni Ürün Ekle</span>
-            </Link>
-          </div>
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            href="/stock-movements/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Stok Hareketi Ekle</span>
+          </Link>
+          <Link
+            href="/products/new"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 text-sm font-semibold shadow-sm transition-all"
+          >
+            <Plus className="w-4 h-4 text-indigo-600" />
+            <span>Yeni Ürün Ekle</span>
+          </Link>
         </div>
       </div>
 
       {/* 2. Dört Adet İstatistik Kartı */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 my-6">
         {/* Toplam Kategori Sayısı */}
         <Link
           href="/categories"
-          className="group p-5 sm:p-6 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+          className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Toplam Kategori
             </span>
-            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition-all">
+            <div className="bg-indigo-50 text-indigo-600 p-3 rounded-lg">
               <Layers className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">
               {categoryCount}
             </div>
-            <div className="text-xs text-indigo-600 mt-2 flex items-center gap-1 font-semibold group-hover:gap-1.5 transition-all">
+            <div className="text-xs text-indigo-600 mt-2 flex items-center gap-1 font-semibold">
               <span>Kategorileri Yönet</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -159,21 +157,21 @@ export default async function Home() {
         {/* Toplam Ürün Sayısı */}
         <Link
           href="/products"
-          className="group p-5 sm:p-6 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+          className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Toplam Ürün
             </span>
-            <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-all">
+            <div className="bg-indigo-50 text-indigo-600 p-3 rounded-lg">
               <Package className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">
               {productCount}
             </div>
-            <div className="text-xs text-blue-600 mt-2 flex items-center gap-1 font-semibold group-hover:gap-1.5 transition-all">
+            <div className="text-xs text-indigo-600 mt-2 flex items-center gap-1 font-semibold">
               <span>Kataloğu İncele</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -183,21 +181,21 @@ export default async function Home() {
         {/* Toplam Stok Hareketi */}
         <Link
           href="/stock-movements"
-          className="group p-5 sm:p-6 rounded-xl bg-white border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+          className="p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               Stok Hareketleri
             </span>
-            <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 group-hover:bg-emerald-600 group-hover:text-white transition-all">
+            <div className="bg-indigo-50 text-indigo-600 p-3 rounded-lg">
               <Activity className="w-5 h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-3xl font-bold text-slate-900 tracking-tight">
               {movementCount}
             </div>
-            <div className="text-xs text-emerald-600 mt-2 flex items-center gap-1 font-semibold group-hover:gap-1.5 transition-all">
+            <div className="text-xs text-indigo-600 mt-2 flex items-center gap-1 font-semibold">
               <span>Hareket Geçmişi</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </div>
@@ -207,19 +205,19 @@ export default async function Home() {
         {/* Kritik Stoktaki Ürün Sayısı (Kırmızı/Sarı Vurgulu) */}
         <Link
           href="/products?status=CRITICAL"
-          className={`group p-5 sm:p-6 rounded-xl bg-white border shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${
+          className={`p-6 bg-white rounded-xl border shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${
             criticalCount > 0 ? "border-amber-300 ring-1 ring-amber-200" : "border-slate-200"
           }`}
         >
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-              Kritik / Biten
+              Kritik / Biten Stok
             </span>
             <div
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`p-3 rounded-lg ${
                 criticalCount > 0
-                  ? "bg-amber-100 text-amber-700 border-amber-300 group-hover:bg-amber-600 group-hover:text-white"
-                  : "bg-slate-100 text-slate-500 border-slate-200"
+                  ? "bg-amber-50 text-amber-600"
+                  : "bg-indigo-50 text-indigo-600"
               }`}
             >
               <ShieldAlert className="w-5 h-5" />
@@ -227,14 +225,14 @@ export default async function Home() {
           </div>
           <div>
             <div
-              className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${
+              className={`text-3xl font-bold tracking-tight ${
                 criticalCount > 0 ? "text-amber-600" : "text-slate-900"
               }`}
             >
               {criticalCount}
             </div>
             <div
-              className={`text-xs mt-2 flex items-center gap-1 font-semibold group-hover:gap-1.5 transition-all ${
+              className={`text-xs mt-2 flex items-center gap-1 font-semibold ${
                 criticalCount > 0 ? "text-amber-600" : "text-slate-500"
               }`}
             >

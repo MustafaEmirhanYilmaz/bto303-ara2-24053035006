@@ -26,11 +26,11 @@ export function Navbar() {
   ];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/80 backdrop-blur-md transition-all">
+    <header className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/80 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="p-2.5 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 text-white shadow-sm shadow-indigo-600/30 group-hover:scale-105 transition-all duration-200">
+          <div className="bg-indigo-600 text-white font-bold p-2 rounded-lg shadow-sm group-hover:scale-105 transition-transform">
             <Package className="w-5 h-5" />
           </div>
           <div>
@@ -51,7 +51,7 @@ export function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-1 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60">
+        <nav className="hidden md:flex items-center gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive =
@@ -62,10 +62,10 @@ export function Navbar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                   isActive
-                    ? "bg-white text-indigo-700 shadow-sm font-semibold"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/50"
+                    ? "text-indigo-600 font-semibold bg-indigo-50/80"
+                    : "text-slate-700 hover:text-indigo-600 hover:bg-slate-50"
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
