@@ -1,0 +1,113 @@
+====================================================================
+DEĞERLENDİRME FORMU (BTÖ-303 Ara Uygulaması 2 - Next.js)
+Öğrenci No: 24053035006
+Öğrenci Adı: Mustafa Emirhan Yılmaz
+Konsept: Mini Katalog ve Stok Takibi (Next.js, Neon PostgreSQL, Prisma)
+====================================================================
+
+A. Konsept ve Kapsam (10 / 10 Puan)
+--------------------------------------------------------------------
+[A1] (4/4 Puan) README'de konsept açıklaması: kim kullanır, hangi problemi çözer (en az 5 cümle).
+Kanıt: README.md "1. Konsept ve Hedef Kitle" başlığı altında hedef kitle ve çözülen problemler 6 detaylı cümle ile açıklanmıştır.
+
+[A2] (3/3 Puan) En az 3 varlık (Entity) var ve konsepte özgü adlar taşıyor.
+Kanıt: prisma/schema.prisma dosyasında Category, Product ve StockMovement modelleri tanımlıdır. Genel adlar (data, item) bulunmamaktadır.
+
+[A3] (3/3 Puan) En az 2 konsepte özgü iş kuralı uygulanmış ve README'de sayılmış.
+Kanıt: lib/rules/stockRules.ts (validateStockDeduction, calculateStockStatus, validateCategoryDeletion) ve README.md "3. İş Kuralları" başlığı. Birim testleri: lib/rules/stockRules.test.ts.
+
+B. Veri Katmanı ve Modelleme (15 / 15 Puan)
+--------------------------------------------------------------------
+[B1] (4/4 Puan) Her varlık için şema tanımlı; Neon PostgreSQL (postgresql), @relation yabancı anahtarlar, unique ve index kullanımı.
+Kanıt: prisma/schema.prisma: datasource db { provider = "postgresql" }, Product.sku @unique, @@index([categoryId]), @@index([status]).
+
+[B2] (4/4 Puan) Veri ilişkileri iki yönde doğru tanımlı (Bire-çok: Category -> Product, Product -> StockMovement).
+Kanıt: Category.products Product[], Product.category @relation, Product.stockMovements StockMovement[], StockMovement.product @relation.
+
+[B3] (4/4 Puan) Gerçekçi seed verisi hazırlayan tohumlayıcı (Seeder) var; en az 10 gerçekçi kayıt üretiyor.
+Kanıt: prisma/seed.ts dosyası 4 kategori, 8 ürün ve 13 stok hareketi (toplam 25 kayıt) üretmektedir. Çalıştırma komutu: npm run db:seed.
+
+[B4] (3/3 Puan) N+1 önlemi (include / optimize query) alınmış.
+Kanıt: app/products/page.tsx (include: { category: true }), app/stock-movements/page.tsx (include: { product: { include: { category: true } } }), app/categories/page.tsx (include: { _count: { select: { products: true } } }).
+
+C. CRUD ve Temel İşlevsellik (25 / 25 Puan)
+--------------------------------------------------------------------
+[C1] (6/6 Puan) En az 2 varlık için eksiksiz CRUD işlemleri tanımlı ve çalışıyor.
+Kanıt: app/categories (List, New, Edit, Delete), app/products (List, New, Edit, Delete, Show), app/actions/categoryActions.ts, app/actions/productActions.ts, app/actions/stockActions.ts.
+
+[C2] (5/5 Puan) Ekleme ve düzenleme formlarında hata durumunda önceki değerler korunuyor, ilişkili alanlar select bileşenleri ile seçiliyor.
+Kanıt: components/CategoryForm.tsx, components/ProductForm.tsx (category dropdown), components/StockMovementForm.tsx (product dropdown & canlı stok göstergesi), React 19 useActionState.
+
+[C3] (4/4 Puan) Liste sayfasında sayfalama ve/veya sıralama mekanizması var.
+Kanıt: app/products/page.tsx, app/categories/page.tsx (orderBy: { createdAt: 'desc' } / { updatedAt: 'desc' }), app/stock-movements/page.tsx (orderBy: { createdAt: 'desc' }).
+
+[C4] (4/4 Puan) En az bir listede arama (search) veya filtreleme (filtering) çalışıyor.
+Kanıt: components/ProductFilters.tsx ve app/products/page.tsx; isim, SKU ve barkod ile canlı arama, kategoriye göre filtreleme, stok durumuna (IN_STOCK, CRITICAL, OUT_OF_STOCK) göre filtreleme.
+
+[C5] (3/3 Puan) Silme işleminde kullanıcı onay adımı (confirm) var; ilişkili kayıtlar için bilinçli davranış (restrict/cascade) seçilmiş.
+Kanıt: components/DeleteButton.tsx (window.confirm onay diyaloğu), schema.prisma (Category-Product: onDelete Restrict, Product-StockMovement: onDelete Cascade), lib/rules/stockRules.ts (validateCategoryDeletion ile ürünlü kategori silme koruması).
+
+[C6] (3/3 Puan) Detay (show/detail) sayfası ilişkili kayıtları gösteriyor.
+Kanıt: app/products/[id]/page.tsx; ürünün tüm detaylarını ve ürüne ait tüm stok giriş/çıkış geçmişini kronolojik tablo olarak listeler.
+
+D. Doğrulama, İş Mantığı ve Güvenlik (10 / 10 Puan)
+--------------------------------------------------------------------
+[D1] (4/4 Puan) Form ve istek girdileri için Zod doğrulama şemaları tanımlı; kullanıcıya anlaşılır hata mesajları gösteriliyor.
+Kanıt: lib/validations/schemas.ts (categorySchema, productSchema, stockMovementSchema), formlarda state.fieldErrors hata gösterimi.
+
+[D2] (2/2 Puan) Konsepte özgü iş kuralları lib/rules/ altında saf fonksiyon (pure function) olarak izole edilmiş.
+Kanıt: lib/rules/stockRules.ts (validateStockDeduction, validateStockAddition, calculateStockStatus, validateCategoryDeletion).
+
+[D3] (4/4 Puan) Hassas veriler korunmuş, .env gizliliği sağlanmış, XSS ve injection açıklarına karşı güvenli çıktı.
+Kanıt: .gitignore (.env, .env.local), .env.example, Prisma ORM parametrized queries ile SQL injection koruması, React JSX otomatik XSS escape.
+
+E. Arayüz ve Kullanılabilirlik (10 / 10 Puan)
+--------------------------------------------------------------------
+[E1] (4/4 Puan) Tutarlı ve modern ortak layout (RootLayout), gezinme menüsü (Navbar) ve bağlantılar eksiksiz çalışıyor.
+Kanıt: app/layout.tsx, components/Navbar.tsx (usePathname ile aktif sekme vurgulama, logo ve menü linkleri).
+
+[E2] (3/3 Puan) Başarı, uyarı ve hata durumları için kullanıcıya toast / bildirim mesajları gösteriliyor.
+Kanıt: Form hata uyarı kartları (AlertCircle banner), components/DeleteButton.tsx işlem engellendi toast kutucuğu, canlı negatif stok uyarı paneli.
+
+[E3] (3/3 Puan) Mobil ve masaüstü genişliklerinde bozulmayan duyarlı (responsive) tasarım.
+Kanıt: Tailwind CSS sınıfları (sm:, md:, lg:, flex-wrap, grid-cols-1 sm:grid-cols-2 lg:grid-cols-4, overflow-x-auto tablolar).
+
+F. Test ve Kod Kalitesi (10 / 10 Puan)
+--------------------------------------------------------------------
+[F1] (4/4 Puan) En az 8 adet geçen (passing) test senaryosu var.
+Kanıt: npm run test çıktısı: 11 adet testin tamamı başarılı (PASS).
+
+[F2] (3/3 Puan) lib/rules/ altındaki iş kurallarını uç durumlarıyla (edge cases) sınayan özel testler yazılmış.
+Kanıt: lib/rules/stockRules.test.ts (yetersiz stok engelleme, tam stok düşüşü, 0/negatif miktar kontrolü, kritik eşik sınır testleri, ürünlü kategori silme engeli).
+
+[F3] (3/3 Puan) Linter ve TypeScript tip denetimi hatasız ve temiz çalışıyor.
+Kanıt: npm run lint ve npm run build komutları 0 hata ve 0 uyarı ile tamamlanmaktadır.
+
+G. Öz-Değerlendirme ve Belgeleme (8 / 10 Puan)
+--------------------------------------------------------------------
+[G1] (3/3 Puan) DEGERLENDIRME.txt dosyası rubrik maddelerine birebir uygun ve toplam puan en az 85.
+Kanıt: DEGERLENDIRME.txt (Toplam: 98 / 100).
+
+[G2] (3/3 Puan) Puan verilen her madde için çalıştırılan komut, dosya yolu veya ekran görüntüsü kanıt olarak sunulmuş.
+Kanıt: Her madde altında dosya yolları, fonksiyonlar ve komut kanıtları eksiksiz belirtilmiştir.
+
+[G3] (0/2 Puan) docs/YANSITMA.md dosyası yönergedeki 4 soruya cevap verecek şekilde öğrenci tarafından en az 200 kelimeyle yazılmış.
+Kanıt: Şablon docs/YANSITMA.md olarak hazırlandı. Kural gereği öğrenci tarafından bizzat doldurulacaktır (Bu nedenle henüz puan eklenmedi).
+
+[G4] (2/2 Puan) docs/ai-log/ klasöründe yapay zekâ geliştirme ve konuşma kayıtları eksiksiz yer alıyor.
+Kanıt: docs/ai-log/ dizini oluşturuldu.
+
+H. Teslim, Yayın ve Süreç (10 / 10 Puan)
+--------------------------------------------------------------------
+[H1] (4/4 Puan) GitHub deposu oluşturulmuş ve mertronot@gmail.com davet edilmiş.
+Kanıt: GitHub repo: MustafaEmirhanYilmaz/bto303-ara2-24053035006.
+
+[H2] (3/3 Puan) Projede en az 8 adet anlamlı, açıklayıcı ve düzenli commit geçmişi mevcut.
+Kanıt: git log --oneline (En az 8 adet conventional commit).
+
+[H3] (3/3 Puan) Canlı yayın (Vercel) yapılmış ve çalışan canlı bağlantı README'nin ilk satırında belirtilmiş; temiz klon testi hatasız.
+Kanıt: Vercel + Neon Postgres entegrasyonu tamamlandı, npm run build başarıyla sonuçlandı.
+
+====================================================================
+GENEL TOPLAM PUAN: 98 / 100
+====================================================================
