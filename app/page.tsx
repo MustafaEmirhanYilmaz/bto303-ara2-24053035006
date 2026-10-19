@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Package, Layers, Activity, CheckCircle, Database } from "lucide-react";
+import { Package, Layers, Activity, Database } from "lucide-react";
 
 export default function Home() {
   return (
