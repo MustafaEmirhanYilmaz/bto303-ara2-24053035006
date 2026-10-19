@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProduct } from "@/app/actions/productActions";
 import { ProductFilters } from "@/components/ProductFilters";
+import { StockBadge } from "@/components/StockBadge";
 import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -56,8 +57,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       where.categoryId = categoryId;
     }
 
-    if (status) {
-      where.status = status;
+    if (status === "IN_STOCK") {
+      where.currentStock = { gt: 10 };
+    } else if (status === "CRITICAL") {
+      where.currentStock = { gte: 1, lte: 10 };
+    } else if (status === "OUT_OF_STOCK") {
+      where.currentStock = { lte: 0 };
     }
 
     // N+1 Önlemi: include category
@@ -72,54 +77,33 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     });
   } catch (err: unknown) {
     console.error("Ürünler yüklenirken hata:", err);
-    dbError = "Veritabanı bağlantısı sağlanamadı. Lütfen DATABASE_URL ortam değişkeninizi ve Neon veritabanı ayarlarınızı kontrol ediniz.";
+    dbError = "Veritabanı bağlantısı sağlanamadı. Lütfen DATABASE_URL ortam değişkeninizi kontrol ediniz.";
   }
 
-  const getStatusBadge = (prodStatus: string, currentStock: number, threshold: number) => {
-    if (prodStatus === "OUT_OF_STOCK" || currentStock <= 0) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-          ● Tükendi
-        </span>
-      );
-    }
-    if (prodStatus === "CRITICAL" || currentStock <= threshold) {
-      return (
-        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-          ▲ Kritik Stok
-        </span>
-      );
-    }
-    return (
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-        ✓ Stokta
-      </span>
-    );
-  };
-
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-10 w-full flex-1">
-      <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-1">
+      {/* Başlık ve Aksiyon Alanı */}
+      <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
         <div>
           <Link
             href="/"
-            className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 mb-2 transition"
+            className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-semibold mb-2 transition"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             Ana Sayfaya Dön
           </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2.5">
-            <Package className="w-7 h-7 text-cyan-400" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 flex items-center gap-2.5">
+            <Package className="w-7 h-7 text-indigo-600" />
             Ürün Kataloğu
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
-            Katalogdaki ürünleri listeleyin, kritik stok durumlarını takip edin ve filtreleyin.
+          <p className="text-sm text-slate-500 mt-1">
+            Katalogdaki ürünleri listeleyin, dinamik stok durumlarını takip edin ve filtreleyin.
           </p>
         </div>
 
         <Link
           href="/products/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition shadow-md shadow-cyan-600/20"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition shadow-sm"
         >
           <Plus className="w-4 h-4" />
           Yeni Ürün Ekle
@@ -127,11 +111,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       </div>
 
       {dbError && (
-        <div className="mb-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
+        <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-sm flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-amber-600" />
           <div>
-            <p className="font-semibold text-amber-200">Veritabanı Uyarısı</p>
-            <p className="text-xs text-amber-300/90 mt-0.5">{dbError}</p>
+            <p className="font-semibold text-amber-900">Veritabanı Uyarısı</p>
+            <p className="text-xs text-amber-800/90 mt-0.5">{dbError}</p>
           </div>
         </div>
       )}
@@ -141,145 +125,124 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
       {/* Katalog Durum Dağılımı Özeti */}
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4 text-xs">
-        <span className="text-slate-400 font-medium">
-          Listelenen Ürün: <strong className="text-white">{products.length}</strong> adet
+        <span className="text-slate-500 font-medium">
+          Listelenen Ürün: <strong className="text-slate-900 font-bold">{products.length}</strong> adet
         </span>
         <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            {products.filter((p) => p.currentStock > p.criticalStockThreshold).length} Yeterli
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+            {products.filter((p) => p.currentStock > 10).length} Stokta Var (&gt;10)
           </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            {products.filter((p) => p.currentStock > 0 && p.currentStock <= p.criticalStockThreshold).length} Kritik
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+            {products.filter((p) => p.currentStock >= 1 && p.currentStock <= 10).length} Kritik (1-10)
           </span>
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
-            {products.filter((p) => p.currentStock <= 0).length} Tükendi
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            {products.filter((p) => p.currentStock <= 0).length} Tükendi (0)
           </span>
         </div>
       </div>
 
       {products.length === 0 ? (
-        <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center flex flex-col items-center justify-center">
-          <div className="p-4 rounded-2xl bg-cyan-500/10 text-cyan-400 mb-4">
+        <div className="p-12 rounded-xl bg-white border border-slate-200 text-center flex flex-col items-center justify-center shadow-sm">
+          <div className="p-4 rounded-xl bg-indigo-50 text-indigo-600 mb-4">
             <Package className="w-8 h-8" />
           </div>
-          <h2 className="text-lg font-semibold text-white mb-2">Eşleşen Ürün Bulunamadı</h2>
-          <p className="text-sm text-slate-400 max-w-md mb-6 leading-relaxed">
+          <h2 className="text-lg font-bold text-slate-900 mb-1">Eşleşen Ürün Bulunamadı</h2>
+          <p className="text-sm text-slate-500 max-w-md mb-6 leading-relaxed">
             Arama kriterlerinizi değiştirebilir veya kataloğa yeni bir ürün ekleyebilirsiniz.
           </p>
           <Link
             href="/products/new"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium transition shadow-md shadow-cyan-600/20"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition shadow-sm"
           >
             <Plus className="w-4 h-4" />
             Yeni Ürün Ekle
           </Link>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl backdrop-blur">
+        <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="bg-slate-900/90 text-xs uppercase text-slate-400 border-b border-slate-800">
+            <thead className="bg-slate-50/80 text-xs font-semibold uppercase text-slate-500 border-b border-slate-200">
               <tr>
-                <th className="px-6 py-4 font-semibold">Ürün Adı & SKU</th>
-                <th className="px-6 py-4 font-semibold">Kategori</th>
-                <th className="px-6 py-4 font-semibold text-right">Fiyat</th>
-                <th className="px-6 py-4 font-semibold text-center">Mevcut Stok</th>
-                <th className="px-6 py-4 font-semibold text-center">Kritik Eşik</th>
-                <th className="px-6 py-4 font-semibold text-center">Durum</th>
-                <th className="px-6 py-4 font-semibold text-right">İşlemler</th>
+                <th className="px-6 py-3.5">Ürün Adı & SKU</th>
+                <th className="px-6 py-3.5">Kategori</th>
+                <th className="px-6 py-3.5 text-right">Fiyat</th>
+                <th className="px-6 py-3.5 text-center">Mevcut Stok</th>
+                <th className="px-6 py-3.5 text-center">Kritik Eşik</th>
+                <th className="px-6 py-3.5 text-center">Durum</th>
+                <th className="px-6 py-3.5 text-right">İşlemler</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/80">
-              {products.map((p) => {
-                const isZero = p.currentStock <= 0;
-                const isCritical = p.currentStock <= p.criticalStockThreshold;
-                const ratio = Math.min(
-                  100,
-                  Math.round((p.currentStock / Math.max(1, p.criticalStockThreshold * 2)) * 100)
-                );
-
-                return (
-                  <tr key={p.id} className="hover:bg-slate-800/40 transition">
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/products/${p.id}`}
-                        className="font-medium text-white hover:text-cyan-400 transition"
-                      >
-                        {p.name}
-                      </Link>
-                      <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                        <span className="font-mono text-cyan-400/90">SKU: {p.sku}</span>
-                        {p.barcode && <span className="text-slate-500">Barkod: {p.barcode}</span>}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Link
-                        href={`/products?category=${p.category.id}`}
-                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition"
-                      >
-                        {p.category.name}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-right font-semibold text-white whitespace-nowrap">
-                      ₺{Number(p.price).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex flex-col items-center">
-                        <span
-                          className={`font-bold text-base ${
-                            isZero ? "text-rose-400" : isCritical ? "text-amber-400" : "text-white"
-                          }`}
-                        >
-                          {p.currentStock}
-                        </span>
-                        <div className="w-16 bg-slate-950 rounded-full h-1 mt-1 overflow-hidden border border-slate-800">
-                          <div
-                            className={`h-full rounded-full transition-all duration-300 ${
-                              isZero
-                                ? "bg-rose-500 w-full"
-                                : isCritical
-                                ? "bg-amber-400"
-                                : "bg-emerald-400"
-                            }`}
-                            style={{
-                              width: isZero ? "100%" : `${Math.max(10, ratio)}%`,
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center text-xs text-slate-400 font-mono">
-                      ≤ {p.criticalStockThreshold}
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {getStatusBadge(p.status, p.currentStock, p.criticalStockThreshold)}
-                    </td>
-                    <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                      <Link
-                        href={`/stock-movements/new?productId=${p.id}`}
-                        className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition"
-                        title="Stok Hareketi Ekle"
-                      >
-                        <Activity className="w-4 h-4" />
-                      </Link>
-                      <Link
-                        href={`/products/${p.id}/edit`}
-                        className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition"
-                        title="Düzenle"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Link>
-                      <DeleteButton
-                        id={p.id}
-                        itemType="ürün"
-                        onDelete={deleteProduct}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
+            <tbody className="divide-y divide-slate-100">
+              {products.map((p) => (
+                <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/products/${p.id}`}
+                      className="font-semibold text-slate-900 hover:text-indigo-600 transition"
+                    >
+                      {p.name}
+                    </Link>
+                    <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5">
+                      <span className="font-mono text-slate-600">SKU: {p.sku}</span>
+                      {p.barcode && <span className="text-slate-400">Barkod: {p.barcode}</span>}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/products?category=${p.category.id}`}
+                      className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                    >
+                      {p.category.name}
+                    </Link>
+                  </td>
+                  <td className="px-6 py-4 text-right font-semibold text-slate-900 whitespace-nowrap">
+                    ₺{Number(p.price).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <span
+                      className={`font-bold text-base ${
+                        p.currentStock <= 0
+                          ? "text-rose-600"
+                          : p.currentStock <= 10
+                          ? "text-amber-600"
+                          : "text-slate-900"
+                      }`}
+                    >
+                      {p.currentStock}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center text-xs text-slate-500 font-mono">
+                    ≤ {p.criticalStockThreshold}
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <StockBadge currentStock={p.currentStock} />
+                  </td>
+                  <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                    <Link
+                      href={`/stock-movements/new?productId=${p.id}`}
+                      className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition"
+                      title="Stok Hareketi Ekle"
+                    >
+                      <Activity className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href={`/products/${p.id}/edit`}
+                      className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition"
+                      title="Düzenle"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </Link>
+                    <DeleteButton
+                      id={p.id}
+                      itemType="ürün"
+                      onDelete={deleteProduct}
+                    />
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

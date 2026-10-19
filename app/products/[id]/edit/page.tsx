@@ -31,26 +31,26 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
   const updateActionWithId = updateProduct.bind(null, id);
 
   return (
-    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-10 w-full flex-1">
+    <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10 w-full flex-1">
       <Link
         href="/products"
-        className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 mb-4 transition"
+        className="inline-flex items-center gap-1.5 text-xs text-indigo-600 hover:text-indigo-700 font-semibold mb-4 transition"
       >
         <ArrowLeft className="w-3.5 h-3.5" />
         Ürün Kataloğuna Dön
       </Link>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-          <Package className="w-6 h-6 text-cyan-400" />
+        <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+          <Package className="w-6 h-6 text-indigo-600" />
           Ürün Düzenle
         </h1>
-        <p className="text-sm text-slate-400 mt-1">
+        <p className="text-sm text-slate-500 mt-1">
           {product.name} ({product.sku}) ürününün detaylarını güncelleyin.
         </p>
       </div>
 
-      <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur">
+      <div className="p-6 sm:p-8 rounded-xl bg-white border border-slate-200 shadow-sm">
         <ProductForm
           categories={categories}
           initialData={{

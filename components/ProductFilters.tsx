@@ -44,25 +44,25 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
   const hasFilters = Boolean(currentQ || currentCategory || currentStatus);
 
   return (
-    <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 mb-6 flex flex-wrap items-center gap-3">
+    <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm mb-6 flex flex-wrap items-center gap-3">
       {/* Arama Input */}
-      <div className="relative flex-1 min-w-[200px]">
+      <div className="relative flex-1 min-w-[220px]">
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
-          placeholder="Ürün adı, SKU veya barkod ara..."
+          placeholder="Ürün adı, SKU veya barkod ile filtrele..."
           defaultValue={currentQ}
           onChange={(e) => updateFilters("q", e.target.value)}
-          className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition"
+          className="w-full pl-9 pr-4 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition"
         />
       </div>
 
       {/* Kategori Filtresi */}
-      <div className="min-w-[160px]">
+      <div className="min-w-[170px]">
         <select
           value={currentCategory}
           onChange={(e) => updateFilters("category", e.target.value)}
-          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-cyan-500 transition"
+          className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition"
         >
           <option value="">Tüm Kategoriler</option>
           {categories.map((c) => (
@@ -74,26 +74,27 @@ export function ProductFilters({ categories }: ProductFiltersProps) {
       </div>
 
       {/* Stok Durumu Filtresi */}
-      <div className="min-w-[150px]">
+      <div className="min-w-[160px]">
         <select
           value={currentStatus}
           onChange={(e) => updateFilters("status", e.target.value)}
-          className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white focus:outline-none focus:border-cyan-500 transition"
+          className="w-full px-3 py-2 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 transition"
         >
-          <option value="">Tüm Durumlar</option>
-          <option value="IN_STOCK">Yeterli Stok</option>
-          <option value="CRITICAL">Kritik Stok</option>
-          <option value="OUT_OF_STOCK">Tükendi</option>
+          <option value="">Tüm Stok Durumları</option>
+          <option value="IN_STOCK">Stokta Var (&gt;10)</option>
+          <option value="CRITICAL">Kritik Stok (1-10)</option>
+          <option value="OUT_OF_STOCK">Tükendi (0)</option>
         </select>
       </div>
 
       {hasFilters && (
         <button
+          type="button"
           onClick={clearAll}
-          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium transition"
+          className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"
         >
           <X className="w-3.5 h-3.5" />
-          Filtreleri Temizle
+          Temizle
         </button>
       )}
     </div>
