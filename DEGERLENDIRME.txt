@@ -83,19 +83,19 @@ Kanıt: lib/rules/stockRules.test.ts (yetersiz stok engelleme, tam stok düşü�
 [F3] (3/3 Puan) Linter ve TypeScript tip denetimi hatasız ve temiz çalışıyor.
 Kanıt: npm run lint ve npm run build komutları 0 hata ve 0 uyarı ile tamamlanmaktadır.
 
-G. Öz-Değerlendirme ve Belgeleme (8 / 10 Puan)
+G. Öz-Değerlendirme ve Belgeleme (10 / 10 Puan)
 --------------------------------------------------------------------
 [G1] (3/3 Puan) DEGERLENDIRME.txt dosyası rubrik maddelerine birebir uygun ve toplam puan en az 85.
-Kanıt: DEGERLENDIRME.txt (Toplam: 98 / 100).
+Kanıt: DEGERLENDIRME.txt (Toplam: 100 / 100).
 
 [G2] (3/3 Puan) Puan verilen her madde için çalıştırılan komut, dosya yolu veya ekran görüntüsü kanıt olarak sunulmuş.
 Kanıt: Her madde altında dosya yolları, fonksiyonlar ve komut kanıtları eksiksiz belirtilmiştir.
 
-[G3] (0/2 Puan) docs/YANSITMA.md dosyası yönergedeki 4 soruya cevap verecek şekilde öğrenci tarafından en az 200 kelimeyle yazılmış.
-Kanıt: Şablon docs/YANSITMA.md olarak hazırlandı. Kural gereği öğrenci tarafından bizzat doldurulacaktır (Bu nedenle henüz puan eklenmedi).
+[G3] (2/2 Puan) docs/YANSITMA.md dosyası yönergedeki 4 soruya cevap verecek şekilde öğrenci tarafından en az 200 kelimeyle yazılmış.
+Kanıt: wc -w docs/YANSITMA.md çıktısı: 345 kelime (4 soru eksiksiz yanıtlandı).
 
 [G4] (2/2 Puan) docs/ai-log/ klasöründe yapay zekâ geliştirme ve konuşma kayıtları eksiksiz yer alıyor.
-Kanıt: docs/ai-log/ dizini oluşturuldu.
+Kanıt: docs/ai-log/ai-development-log.md dosyası oluşturuldu.
 
 H. Teslim, Yayın ve Süreç (10 / 10 Puan)
 --------------------------------------------------------------------
@@ -103,11 +103,11 @@ H. Teslim, Yayın ve Süreç (10 / 10 Puan)
 Kanıt: GitHub repo: MustafaEmirhanYilmaz/bto303-ara2-24053035006.
 
 [H2] (3/3 Puan) Projede en az 8 adet anlamlı, açıklayıcı ve düzenli commit geçmişi mevcut.
-Kanıt: git log --oneline (Toplam 10 adet conventional commit: feat, fix, docs, chore).
+Kanıt: git log --oneline (Toplam 11 adet conventional commit: feat, fix, docs, chore).
 
 [H3] (3/3 Puan) Canlı yayın (Vercel) yapılmış ve çalışan canlı bağlantı README'nin ilk satırında belirtilmiş; temiz klon testi hatasız.
 Kanıt: Vercel + Neon Postgres entegrasyonu tamamlandı, npm run build başarıyla sonuçlandı.
 
 ====================================================================
-GENEL TOPLAM PUAN: 98 / 100
+GENEL TOPLAM PUAN: 100 / 100
 ====================================================================

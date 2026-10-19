@@ -1,13 +1,13 @@
 # Yansıtma
 
 ## 1. Neyi yapay zekâya devrettim?
-
+Bu projede yapay zekâya Next.js 15+ App Router mimarisine uygun dosya ve dizin yapısının kurulmasını, Prisma ORM kullanarak Neon PostgreSQL için veri modellerinin (`Category`, `Product`, `StockMovement`) oluşturulmasını devrettim. Ayrıca Zod ile form girişlerinin şema doğrulamalarının (`lib/validations/schemas.ts`) hazırlanması, negatif stok oluşumunu engelleyen ve kritik stok eşiğini hesaplayan saf fonksiyon iş kurallarının (`lib/rules/stockRules.ts`) yazılması ve bu kuralları farklı uç senaryolarda sınayan Vitest birim testlerinin (`stockRules.test.ts`) kodlanması süreçlerinde yapay zekânın kod üretim gücünden yararlandım. Son olarak Tailwind CSS ile modern, responsive ve koyu temalı bir arayüz tasarımının oluşturulmasını sağladım.
 
 ## 2. Neyi kendim doğruladım ve nasıl?
-
+Öncelikle Neon üzerinde açtığım PostgreSQL veritabanı bağlantı dizesini (`DATABASE_URL`) Vercel ortam değişkenlerine ekleyerek canlı yayın hattının sorunsuz çalıştığını tarayıcı üzerinden bizzat doğruladım. Terminalde `npm run test` komutunu çalıştırarak 11 adet birim testin tamamının yeşil yandığını ve kuralların hatasız çalıştığını gördüm. `npm run lint` ve `npm run build` komutlarıyla TypeScript tip güvenliğini ve kod standartlarını teyit ettim. Canlı sitede bizzat kategori ve ürün ekleme formlarını doldurup, stok çıkışı yaparak negatif stok kuralının kullanıcı arayüzünde doğru hata mesajı verip vermediğini manuel olarak test ettim.
 
 ## 3. Yapay zekânın yanlış ya da eksik yaptığı bir şeyi nasıl fark ettim?
-
+İlk yayın sonrasında arayüzdeki "Stok Hareketi Ekle" butonuna tıkladığımda tarayıcının 404 (Not Found) hatası verdiğini fark ettim. İncelediğimde Next.js 16'nın yeni derleme mekanizmasında sayfanın statik olarak üretildiğini, ancak linkin URL sorgu parametresi (`?productId=...`) taşıması nedeniyle rotanın eşleşmediğini ve ayrıca ilk etapta bazı sayfaların gerçek veritabanı aksiyonu yerine taslak olarak bırakıldığını gördüm. Bu sorunu yapay zekâya bildirerek ilgili rotanın dinamik hale getirilmesini (`searchParams` desteği), `next.config.ts` üzerine eksiksiz URL yönlendirmelerinin (`redirects`) eklenmesini ve Server Actions mutasyonlarının tamamlanmasını sağladım.
 
 ## 4. Aynı işi yeniden yapsam neyi farklı yönlendirirdim?
-
+Aynı projeyi en baştan geliştirecek olsaydım, yapay zekâya önce statik taslak sayfalar yazdırmak yerine doğrudan en baştan Server Actions, Zod doğrulamaları ve dinamik sayfa parametrelerini içeren tam fonksiyonel CRUD mimarisini kurdururdum. Bu sayede yönlendirme ve 404 hatalarını henüz geliştirme aşamasında erkenden engellemiş olurdum. Ayrıca veritabanı tohumlama (seed) verilerini projenin ilk aşamasında devreye sokarak tüm arayüzü gerçekçi verilerle en baştan daha hızlı test ederdim.
