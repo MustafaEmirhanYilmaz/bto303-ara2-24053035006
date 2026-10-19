@@ -173,7 +173,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               {products.map((p) => (
                 <tr key={p.id} className="hover:bg-slate-800/40 transition">
                   <td className="px-6 py-4">
-                    <div className="font-medium text-white">{p.name}</div>
+                    <Link
+                      href={`/products/${p.id}`}
+                      className="font-medium text-white hover:text-cyan-400 transition"
+                    >
+                      {p.name}
+                    </Link>
                     <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
                       <span className="font-mono text-cyan-400/90">SKU: {p.sku}</span>
                       {p.barcode && <span className="text-slate-500">Barkod: {p.barcode}</span>}
