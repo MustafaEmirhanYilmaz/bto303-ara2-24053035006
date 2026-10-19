@@ -40,6 +40,14 @@ export default async function StockMovementsPage() {
     dbError = "Veritabanı bağlantısı sağlanamadı. Lütfen DATABASE_URL ortam değişkeninizi ve Neon veritabanı ayarlarınızı kontrol ediniz.";
   }
 
+  const totalIn = movements
+    .filter((m) => m.type === "IN")
+    .reduce((acc, m) => acc + m.quantity, 0);
+  const totalOut = movements
+    .filter((m) => m.type === "OUT")
+    .reduce((acc, m) => acc + m.quantity, 0);
+  const netChange = totalIn - totalOut;
+
   return (
     <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 w-full flex-1">
       <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
@@ -62,7 +70,7 @@ export default async function StockMovementsPage() {
 
         <Link
           href="/stock-movements/new"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition shadow-md shadow-emerald-600/20"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-semibold transition shadow-md shadow-emerald-600/20"
         >
           <Plus className="w-4 h-4" />
           Yeni Hareket Kaydı
@@ -78,6 +86,45 @@ export default async function StockMovementsPage() {
           </div>
         </div>
       )}
+
+      {/* Stok Hareketleri İstatistik Sayaçları */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <ArrowUpCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Toplam Depo Girişi</span>
+            <span className="text-2xl font-bold text-emerald-400">+{totalIn} Adet</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <ArrowDownCircle className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Toplam Depo Çıkışı</span>
+            <span className="text-2xl font-bold text-rose-400">-{totalOut} Adet</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Net Hacim Değişimi</span>
+            <span
+              className={`text-2xl font-bold ${
+                netChange >= 0 ? "text-cyan-400" : "text-amber-400"
+              }`}
+            >
+              {netChange >= 0 ? `+${netChange}` : netChange} Adet
+            </span>
+          </div>
+        </div>
+      </div>
 
       {movements.length === 0 ? (
         <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center flex flex-col items-center justify-center">
@@ -114,18 +161,25 @@ export default async function StockMovementsPage() {
                 const isOut = m.type === "OUT";
                 return (
                   <tr key={m.id} className="hover:bg-slate-800/40 transition">
-                    <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap">
+                    <td className="px-6 py-4 text-xs text-slate-400 whitespace-nowrap font-mono">
                       {new Date(m.createdAt).toLocaleString("tr-TR", {
                         dateStyle: "short",
                         timeStyle: "short",
                       })}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-medium text-white">{m.product.name}</div>
+                      <Link
+                        href={`/products/${m.product.id}`}
+                        className="font-semibold text-white hover:text-cyan-400 transition block"
+                      >
+                        {m.product.name}
+                      </Link>
                       <div className="text-xs font-mono text-cyan-400/90">{m.product.sku}</div>
                     </td>
                     <td className="px-6 py-4 text-slate-400 text-xs">
-                      {m.product.category.name}
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs bg-slate-800 text-slate-300 border border-slate-700">
+                        {m.product.category.name}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-center">
                       {isOut ? (

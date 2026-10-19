@@ -139,6 +139,27 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       {/* Arama & Filtreleme Çubuğu */}
       <ProductFilters categories={categories} />
 
+      {/* Katalog Durum Dağılımı Özeti */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4 text-xs">
+        <span className="text-slate-400 font-medium">
+          Listelenen Ürün: <strong className="text-white">{products.length}</strong> adet
+        </span>
+        <div className="flex items-center gap-2">
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            {products.filter((p) => p.currentStock > p.criticalStockThreshold).length} Yeterli
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+            {products.filter((p) => p.currentStock > 0 && p.currentStock <= p.criticalStockThreshold).length} Kritik
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-400" />
+            {products.filter((p) => p.currentStock <= 0).length} Tükendi
+          </span>
+        </div>
+      </div>
+
       {products.length === 0 ? (
         <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center flex flex-col items-center justify-center">
           <div className="p-4 rounded-2xl bg-cyan-500/10 text-cyan-400 mb-4">
@@ -171,60 +192,94 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/80">
-              {products.map((p) => (
-                <tr key={p.id} className="hover:bg-slate-800/40 transition">
-                  <td className="px-6 py-4">
-                    <Link
-                      href={`/products/${p.id}`}
-                      className="font-medium text-white hover:text-cyan-400 transition"
-                    >
-                      {p.name}
-                    </Link>
-                    <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                      <span className="font-mono text-cyan-400/90">SKU: {p.sku}</span>
-                      {p.barcode && <span className="text-slate-500">Barkod: {p.barcode}</span>}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700">
-                      {p.category.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-right font-medium text-white">
-                    ₺{Number(p.price).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
-                  </td>
-                  <td className="px-6 py-4 text-center font-bold text-base text-white">
-                    {p.currentStock}
-                  </td>
-                  <td className="px-6 py-4 text-center text-xs text-slate-400">
-                    ≤ {p.criticalStockThreshold}
-                  </td>
-                  <td className="px-6 py-4 text-center">
-                    {getStatusBadge(p.status, p.currentStock, p.criticalStockThreshold)}
-                  </td>
-                  <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                    <Link
-                      href={`/stock-movements/new?productId=${p.id}`}
-                      className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition"
-                      title="Stok Hareketi Ekle"
-                    >
-                      <Activity className="w-4 h-4" />
-                    </Link>
-                    <Link
-                      href={`/products/${p.id}/edit`}
-                      className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition"
-                      title="Düzenle"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </Link>
-                    <DeleteButton
-                      id={p.id}
-                      itemType="ürün"
-                      onDelete={deleteProduct}
-                    />
-                  </td>
-                </tr>
-              ))}
+              {products.map((p) => {
+                const isZero = p.currentStock <= 0;
+                const isCritical = p.currentStock <= p.criticalStockThreshold;
+                const ratio = Math.min(
+                  100,
+                  Math.round((p.currentStock / Math.max(1, p.criticalStockThreshold * 2)) * 100)
+                );
+
+                return (
+                  <tr key={p.id} className="hover:bg-slate-800/40 transition">
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/products/${p.id}`}
+                        className="font-medium text-white hover:text-cyan-400 transition"
+                      >
+                        {p.name}
+                      </Link>
+                      <div className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                        <span className="font-mono text-cyan-400/90">SKU: {p.sku}</span>
+                        {p.barcode && <span className="text-slate-500">Barkod: {p.barcode}</span>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link
+                        href={`/products?category=${p.category.id}`}
+                        className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition"
+                      >
+                        {p.category.name}
+                      </Link>
+                    </td>
+                    <td className="px-6 py-4 text-right font-semibold text-white whitespace-nowrap">
+                      ₺{Number(p.price).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex flex-col items-center">
+                        <span
+                          className={`font-bold text-base ${
+                            isZero ? "text-rose-400" : isCritical ? "text-amber-400" : "text-white"
+                          }`}
+                        >
+                          {p.currentStock}
+                        </span>
+                        <div className="w-16 bg-slate-950 rounded-full h-1 mt-1 overflow-hidden border border-slate-800">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              isZero
+                                ? "bg-rose-500 w-full"
+                                : isCritical
+                                ? "bg-amber-400"
+                                : "bg-emerald-400"
+                            }`}
+                            style={{
+                              width: isZero ? "100%" : `${Math.max(10, ratio)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-center text-xs text-slate-400 font-mono">
+                      ≤ {p.criticalStockThreshold}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {getStatusBadge(p.status, p.currentStock, p.criticalStockThreshold)}
+                    </td>
+                    <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                      <Link
+                        href={`/stock-movements/new?productId=${p.id}`}
+                        className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/10 transition"
+                        title="Stok Hareketi Ekle"
+                      >
+                        <Activity className="w-4 h-4" />
+                      </Link>
+                      <Link
+                        href={`/products/${p.id}/edit`}
+                        className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition"
+                        title="Düzenle"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </Link>
+                      <DeleteButton
+                        id={p.id}
+                        itemType="ürün"
+                        onDelete={deleteProduct}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

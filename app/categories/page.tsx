@@ -69,6 +69,43 @@ export default async function CategoriesPage() {
         </div>
       )}
 
+      {/* Kategori İstatistik Kartları */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Toplam Kategori</span>
+            <span className="text-2xl font-bold text-white">{categories.length}</span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Toplam Atanmış Ürün</span>
+            <span className="text-2xl font-bold text-cyan-400">
+              {categories.reduce((acc, c) => acc + c._count.products, 0)} Adet
+            </span>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800 flex items-center gap-3.5">
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <Layers className="w-5 h-5" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 block font-medium">Boş Kategoriler</span>
+            <span className="text-2xl font-bold text-emerald-400">
+              {categories.filter((c) => c._count.products === 0).length} Adet
+            </span>
+          </div>
+        </div>
+      </div>
+
       {categories.length === 0 ? (
         <div className="p-12 rounded-2xl bg-slate-900/40 border border-slate-800 text-center flex flex-col items-center justify-center">
           <div className="p-4 rounded-2xl bg-indigo-500/10 text-indigo-400 mb-4">
@@ -93,7 +130,7 @@ export default async function CategoriesPage() {
               <tr>
                 <th className="px-6 py-4 font-semibold">Kategori Adı</th>
                 <th className="px-6 py-4 font-semibold">Açıklama</th>
-                <th className="px-6 py-4 font-semibold text-center">İlişkili Ürün</th>
+                <th className="px-6 py-4 font-semibold text-center">İlişkili Ürün Sayısı</th>
                 <th className="px-6 py-4 font-semibold">Kayıt Tarihi</th>
                 <th className="px-6 py-4 font-semibold text-right">İşlemler</th>
               </tr>
@@ -101,22 +138,32 @@ export default async function CategoriesPage() {
             <tbody className="divide-y divide-slate-800/80">
               {categories.map((cat) => (
                 <tr key={cat.id} className="hover:bg-slate-800/40 transition">
-                  <td className="px-6 py-4 font-medium text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-                    {cat.name}
+                  <td className="px-6 py-4">
+                    <Link
+                      href={`/products?category=${cat.id}`}
+                      className="font-semibold text-white hover:text-indigo-400 flex items-center gap-2 transition"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0"></span>
+                      <span>{cat.name}</span>
+                    </Link>
                   </td>
-                  <td className="px-6 py-4 text-slate-400 max-w-xs truncate">
+                  <td className="px-6 py-4 text-slate-400 max-w-xs truncate text-xs">
                     {cat.description || <span className="text-slate-600 italic">—</span>}
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-                      {cat._count.products} ürün
-                    </span>
+                    <Link
+                      href={`/products?category=${cat.id}`}
+                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 transition"
+                      title="Bu kategorideki ürünleri filtrele"
+                    >
+                      <span>{cat._count.products} ürün</span>
+                      <span className="text-indigo-400">→</span>
+                    </Link>
                   </td>
-                  <td className="px-6 py-4 text-xs text-slate-400">
+                  <td className="px-6 py-4 text-xs text-slate-400 font-mono">
                     {new Date(cat.createdAt).toLocaleDateString("tr-TR")}
                   </td>
-                  <td className="px-6 py-4 text-right space-x-1">
+                  <td className="px-6 py-4 text-right space-x-1 whitespace-nowrap">
                     <Link
                       href={`/categories/${cat.id}/edit`}
                       className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition"

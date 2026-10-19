@@ -19,6 +19,7 @@ export default async function NewStockMovementPage({ searchParams }: NewStockMov
     name: string;
     sku: string;
     currentStock: number;
+    criticalStockThreshold: number;
   }> = [];
 
   try {
@@ -28,6 +29,7 @@ export default async function NewStockMovementPage({ searchParams }: NewStockMov
         name: true,
         sku: true,
         currentStock: true,
+        criticalStockThreshold: true,
       },
       orderBy: { name: "asc" },
     });

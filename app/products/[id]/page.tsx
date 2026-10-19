@@ -57,6 +57,20 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
     );
   };
 
+  const totalIn = product.stockMovements
+    .filter((m) => m.type === "IN")
+    .reduce((acc, m) => acc + m.quantity, 0);
+  const totalOut = product.stockMovements
+    .filter((m) => m.type === "OUT")
+    .reduce((acc, m) => acc + m.quantity, 0);
+  const totalProductValue = product.currentStock * Number(product.price);
+  const isZero = product.currentStock <= 0;
+  const isCritical = product.currentStock <= product.criticalStockThreshold;
+  const stockRatio = Math.min(
+    100,
+    Math.round((product.currentStock / Math.max(1, product.criticalStockThreshold * 2)) * 100)
+  );
+
   return (
     <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 w-full flex-1">
       <Link
@@ -68,64 +82,114 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
       </Link>
 
       {/* Ürün Başlık Kartı */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur mb-8">
+      <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/60 border border-slate-800 shadow-xl backdrop-blur mb-8">
         <div className="flex flex-wrap items-start justify-between gap-4 pb-6 border-b border-slate-800">
           <div>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-800 text-slate-300 border border-slate-700 mb-2">
+            <Link
+              href={`/products?category=${product.category.id}`}
+              className="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 mb-2 transition"
+            >
               {product.category.name}
-            </span>
+            </Link>
             <h1 className="text-2xl sm:text-3xl font-bold text-white flex items-center gap-2">
               <Package className="w-7 h-7 text-cyan-400" />
               {product.name}
             </h1>
-            <div className="flex items-center gap-3 mt-2 text-xs text-slate-400 font-mono">
-              <span className="text-cyan-400">SKU: {product.sku}</span>
+            <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-slate-400 font-mono">
+              <span className="text-cyan-400 font-semibold">SKU: {product.sku}</span>
               {product.barcode && <span>Barkod: {product.barcode}</span>}
+              <span className="text-slate-500">•</span>
+              <span className="text-slate-400 font-sans">
+                Kayıt: {new Date(product.createdAt).toLocaleDateString("tr-TR")}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Link
               href={`/stock-movements/new?productId=${product.id}`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition shadow-md shadow-emerald-600/20"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold shadow-md shadow-emerald-600/20 transition"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
               Stok Hareketi Ekle
             </Link>
             <Link
               href={`/products/${product.id}/edit`}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition"
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition"
             >
-              <Edit2 className="w-3.5 h-3.5" />
+              <Edit2 className="w-4 h-4" />
               Düzenle
             </Link>
           </div>
         </div>
 
         {/* Metrikler */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6">
-          <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-6 border-b border-slate-800/80">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
             <span className="text-xs text-slate-400 block mb-1">Mevcut Stok</span>
-            <span className="text-2xl font-bold text-white">{product.currentStock} Adet</span>
+            <span
+              className={`text-2xl sm:text-3xl font-extrabold ${
+                isZero ? "text-rose-400" : isCritical ? "text-amber-400" : "text-white"
+              }`}
+            >
+              {product.currentStock} Adet
+            </span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Kritik Stok Eşiği</span>
-            <span className="text-2xl font-bold text-slate-300">≤ {product.criticalStockThreshold}</span>
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-xs text-slate-400 block mb-1">Kritik Eşik Seviyesi</span>
+            <span className="text-2xl sm:text-3xl font-extrabold text-slate-300">
+              ≤ {product.criticalStockThreshold}
+            </span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Birim Fiyat</span>
-            <span className="text-2xl font-bold text-white">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-xs text-slate-400 block mb-1">Birim Satış Fiyatı</span>
+            <span className="text-2xl sm:text-3xl font-extrabold text-white">
               ₺{Number(product.price).toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
             </span>
           </div>
 
-          <div className="p-4 rounded-xl bg-slate-950/50 border border-slate-800/80">
-            <span className="text-xs text-slate-400 block mb-1">Stok Durumu</span>
-            <div className="mt-1">
+          <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
+            <span className="text-xs text-slate-400 block mb-1">Toplam Stok Değeri</span>
+            <span className="text-2xl sm:text-3xl font-extrabold text-emerald-400">
+              ₺{totalProductValue.toLocaleString("tr-TR", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+
+        {/* Görsel Stok Sağlık Göstergesi */}
+        <div className="pt-6">
+          <div className="flex items-center justify-between text-xs mb-2">
+            <span className="font-semibold text-slate-300 flex items-center gap-2">
+              <span>Stok Doluluk & Eşik Oranı</span>
               {getStatusBadge(product.status, product.currentStock, product.criticalStockThreshold)}
-            </div>
+            </span>
+            <span className="text-slate-400 font-mono">
+              Eşik: {product.criticalStockThreshold} | Mevcut: {product.currentStock}
+            </span>
+          </div>
+          <div className="w-full bg-slate-950 rounded-full h-3 overflow-hidden border border-slate-800 p-0.5">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                isZero ? "bg-rose-500" : isCritical ? "bg-amber-400" : "bg-emerald-400"
+              }`}
+              style={{
+                width: isZero ? "100%" : `${Math.max(8, stockRatio)}%`,
+              }}
+            />
+          </div>
+
+          {/* Tarihsel Giriş / Çıkış Hacmi */}
+          <div className="flex items-center gap-6 mt-4 text-xs text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400" />
+              Kayıtlı Toplam Giriş: <strong className="text-white font-mono">+{totalIn} adet</strong>
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-rose-400" />
+              Kayıtlı Toplam Çıkış: <strong className="text-white font-mono">-{totalOut} adet</strong>
+            </span>
           </div>
         </div>
       </div>

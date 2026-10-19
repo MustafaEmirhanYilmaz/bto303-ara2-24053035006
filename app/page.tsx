@@ -9,8 +9,15 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   Sparkles,
+  Coins,
+  TrendingUp,
+  BarChart3,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
 } from "lucide-react";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -19,24 +26,28 @@ export default async function Home() {
   let productCount = 0;
   let criticalCount = 0;
   let movementCount = 0;
+  let totalStockUnits = 0;
+  let totalInventoryValue = 0;
   let criticalProducts: Array<{
     id: string;
     name: string;
     sku: string;
     currentStock: number;
     criticalStockThreshold: number;
+    price: number | Prisma.Decimal;
     category: { name: string };
   }> = [];
   let recentMovements: Array<{
     id: string;
     type: string;
     quantity: number;
+    reason: string | null;
     createdAt: Date;
     product: { name: string; sku: string };
   }> = [];
 
   try {
-    const [catCount, prodCount, critCount, moveCount, critProds, recMoves] =
+    const [catCount, prodCount, critCount, moveCount, critProds, recMoves, allProducts] =
       await Promise.all([
         prisma.category.count(),
         prisma.product.count(),
@@ -53,15 +64,18 @@ export default async function Home() {
           include: {
             category: { select: { name: true } },
           },
-          take: 5,
+          take: 6,
           orderBy: { currentStock: "asc" },
         }),
         prisma.stockMovement.findMany({
           include: {
             product: { select: { name: true, sku: true } },
           },
-          take: 5,
+          take: 6,
           orderBy: { createdAt: "desc" },
+        }),
+        prisma.product.findMany({
+          select: { currentStock: true, price: true },
         }),
       ]);
 
@@ -71,6 +85,11 @@ export default async function Home() {
     movementCount = moveCount;
     criticalProducts = critProds;
     recentMovements = recMoves;
+
+    for (const p of allProducts) {
+      totalStockUnits += p.currentStock;
+      totalInventoryValue += p.currentStock * Number(p.price);
+    }
   } catch (err: unknown) {
     console.error("Dashboard verileri alınırken hata:", err);
   }
@@ -119,7 +138,7 @@ export default async function Home() {
       </div>
 
       {/* Canlı İstatistik Sayaçları (Glass Cards with Glow) */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6">
         <Link
           href="/categories"
           className="group relative p-5 sm:p-6 rounded-2xl bg-slate-900/60 border border-slate-800 hover:border-indigo-500/40 hover:shadow-xl hover:shadow-indigo-500/10 hover:-translate-y-1 transition-all duration-200 backdrop-blur overflow-hidden"
@@ -147,7 +166,7 @@ export default async function Home() {
         >
           <div className="flex items-center justify-between mb-4">
             <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Toplam Ürün
+              Toplam Çeşit
             </span>
             <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:scale-110 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-200">
               <Package className="w-5 h-5" />
@@ -182,7 +201,7 @@ export default async function Home() {
             {criticalCount}
           </div>
           <div className="text-xs text-amber-400 mt-2 flex items-center gap-1 font-medium group-hover:gap-1.5 transition-all">
-            <span>{criticalCount > 0 ? "Acil İkmal Gerekli" : "Tüm Stoklar Yeterli"}</span>
+            <span>{criticalCount > 0 ? "Acil İkmal Bekliyor" : "Tüm Stoklar Yeterli"}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </Link>
@@ -203,10 +222,99 @@ export default async function Home() {
             {movementCount}
           </div>
           <div className="text-xs text-emerald-400 mt-2 flex items-center gap-1 font-medium group-hover:gap-1.5 transition-all">
-            <span>Hareket Geçmişi</span>
+            <span>Tüm Geçmiş</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </div>
         </Link>
+      </div>
+
+      {/* Finansal & Envanter Hacmi Özet Çubuğu */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-indigo-950/40 to-slate-900/70 border border-indigo-500/20 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shrink-0">
+            <Coins className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block">Tahmini Envanter Değeri</span>
+            <span className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+              ₺{totalInventoryValue.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-950/40 to-slate-900/70 border border-emerald-500/20 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+            <TrendingUp className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block">Toplam Depo Mevcudu</span>
+            <span className="text-xl sm:text-2xl font-extrabold text-emerald-400 tracking-tight">
+              {totalStockUnits.toLocaleString("tr-TR")} Adet
+            </span>
+          </div>
+        </div>
+
+        <div className="sm:col-span-2 lg:col-span-1 p-5 rounded-2xl bg-gradient-to-br from-cyan-950/40 to-slate-900/70 border border-cyan-500/20 flex items-center gap-4">
+          <div className="p-3 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 shrink-0">
+            <BarChart3 className="w-6 h-6" />
+          </div>
+          <div>
+            <span className="text-xs text-slate-400 font-medium block">Katalog Sağlık Oranı</span>
+            <span className="text-xl sm:text-2xl font-extrabold text-cyan-400 tracking-tight">
+              {productCount > 0 ? `${Math.round(((productCount - criticalCount) / productCount) * 100)}%` : "100%"} Sağlıklı
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Hızlı İşlem Kartları */}
+      <div className="mb-10">
+        <h2 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+          <span>Hızlı Operasyonlar</span>
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Link
+            href="/categories/new"
+            className="group p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-indigo-500/50 hover:bg-slate-900/90 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 group-hover:bg-indigo-600 group-hover:text-white transition">
+              <Layers className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white group-hover:text-indigo-300 transition">Yeni Kategori Aç</p>
+              <p className="text-xs text-slate-500 truncate">Ürün gruplarını genişletin</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-indigo-400 transition" />
+          </Link>
+
+          <Link
+            href="/products/new"
+            className="group p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-cyan-500/50 hover:bg-slate-900/90 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 group-hover:bg-cyan-600 group-hover:text-white transition">
+              <Package className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white group-hover:text-cyan-300 transition">Yeni Ürün Tanımla</p>
+              <p className="text-xs text-slate-500 truncate">SKU, fiyat ve eşik belirleyin</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-cyan-400 transition" />
+          </Link>
+
+          <Link
+            href="/stock-movements/new"
+            className="group p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-emerald-500/50 hover:bg-slate-900/90 hover:-translate-y-0.5 transition-all duration-200 flex items-center gap-3.5"
+          >
+            <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 group-hover:bg-emerald-600 group-hover:text-white transition">
+              <Activity className="w-4 h-4" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white group-hover:text-emerald-300 transition">Stok Hareketi İşle</p>
+              <p className="text-xs text-slate-500 truncate">Giriş ve çıkış kaydedin</p>
+            </div>
+            <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-emerald-400 transition" />
+          </Link>
+        </div>
       </div>
 
       {/* İki Kolonlu Panel: Kritik Stok Uyarıları & Son Hareketler */}
@@ -219,7 +327,7 @@ export default async function Home() {
                 <span className="p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">
                   <ShieldAlert className="w-4 h-4" />
                 </span>
-                Kritik Eşikteki Ürünler
+                Kritik & Tüketen Ürünler
               </h2>
               <Link
                 href="/products?status=CRITICAL"
@@ -239,39 +347,76 @@ export default async function Home() {
               </div>
             ) : (
               <div className="space-y-3">
-                {criticalProducts.map((p) => (
-                  <div
-                    key={p.id}
-                    className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 flex flex-wrap sm:flex-nowrap items-center justify-between gap-3 text-sm transition"
-                  >
-                    <div>
-                      <p className="font-semibold text-white">{p.name}</p>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {p.category.name} • <span className="font-mono text-cyan-400">{p.sku}</span>
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3 ml-auto sm:ml-0">
-                      <div className="text-right">
+                {criticalProducts.map((p) => {
+                  const isZero = p.currentStock <= 0;
+                  const ratio = Math.min(
+                    100,
+                    Math.round((p.currentStock / Math.max(1, p.criticalStockThreshold)) * 100)
+                  );
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-4 rounded-2xl bg-slate-950/70 border border-slate-800 hover:border-slate-700 flex flex-col gap-2.5 transition"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <Link
+                            href={`/products/${p.id}`}
+                            className="font-semibold text-white hover:text-cyan-400 transition"
+                          >
+                            {p.name}
+                          </Link>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {p.category.name} • <span className="font-mono text-cyan-400">{p.sku}</span>
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`text-sm font-bold block ${
+                              isZero ? "text-rose-400" : "text-amber-400"
+                            }`}
+                          >
+                            {p.currentStock} Adet
+                          </span>
+                          <span className="text-[11px] text-slate-500">
+                            Eşik: ≤{p.criticalStockThreshold}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Mini Stok Sağlık Barı */}
+                      <div className="w-full bg-slate-900 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isZero ? "bg-rose-500 w-full" : "bg-amber-400"
+                          }`}
+                          style={{ width: isZero ? "100%" : `${Math.max(8, ratio)}%` }}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between pt-1">
                         <span
-                          className={`text-sm font-bold block ${
-                            p.currentStock <= 0 ? "text-rose-400" : "text-amber-400"
+                          className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full ${
+                            isZero
+                              ? "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                              : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
                           }`}
                         >
-                          {p.currentStock} Adet
+                          <AlertTriangle className="w-3 h-3" />
+                          {isZero ? "TÜKENDİ" : "KRİTİK SEVİYE"}
                         </span>
-                        <span className="text-[11px] text-slate-500">
-                          Eşik: ≤{p.criticalStockThreshold}
-                        </span>
+
+                        <Link
+                          href={`/stock-movements/new?productId=${p.id}`}
+                          className="px-3 py-1 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold border border-emerald-500/30 transition shadow-sm flex items-center gap-1"
+                        >
+                          <Plus className="w-3 h-3" />
+                          <span>Stok Girişi Yap</span>
+                        </Link>
                       </div>
-                      <Link
-                        href={`/stock-movements/new?productId=${p.id}`}
-                        className="px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white text-xs font-semibold border border-emerald-500/30 transition shadow-sm"
-                      >
-                        + Stok Ekle
-                      </Link>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -285,7 +430,7 @@ export default async function Home() {
                 <span className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                   <Activity className="w-4 h-4" />
                 </span>
-                Son Stok Hareketleri
+                Son Stok Hareket Akışı
               </h2>
               <Link
                 href="/stock-movements"
@@ -328,7 +473,14 @@ export default async function Home() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-white truncate">{m.product.name}</p>
-                          <p className="text-xs text-slate-500 font-mono">{m.product.sku}</p>
+                          <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500">
+                            <span className="font-mono text-cyan-400">{m.product.sku}</span>
+                            {m.reason && (
+                              <span className="text-slate-400 truncate max-w-[150px] sm:max-w-[200px]">
+                                • {m.reason}
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -340,7 +492,8 @@ export default async function Home() {
                         >
                           {isOut ? `-${m.quantity}` : `+${m.quantity}`} Adet
                         </span>
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-slate-500 flex items-center justify-end gap-1">
+                          <Clock className="w-3 h-3 text-slate-600" />
                           {new Date(m.createdAt).toLocaleDateString("tr-TR")}
                         </span>
                       </div>

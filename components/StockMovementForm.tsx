@@ -10,6 +10,7 @@ interface ProductOption {
   name: string;
   sku: string;
   currentStock: number;
+  criticalStockThreshold?: number;
 }
 
 interface StockMovementFormProps {
@@ -25,10 +26,24 @@ export function StockMovementForm({ products, defaultProductId, action }: StockM
   const [quantity, setQuantity] = useState<number>(1);
 
   const selectedProduct = products.find((p) => p.id === selectedProductId);
+  const threshold = selectedProduct?.criticalStockThreshold ?? 5;
   const isOutOfStockRisk =
     movementType === "OUT" &&
     selectedProduct &&
     quantity > selectedProduct.currentStock;
+
+  const predictedStock = selectedProduct
+    ? movementType === "IN"
+      ? selectedProduct.currentStock + (Number(quantity) || 0)
+      : selectedProduct.currentStock - (Number(quantity) || 0)
+    : null;
+
+  const isCriticalAfter =
+    predictedStock !== null &&
+    predictedStock > 0 &&
+    predictedStock <= threshold;
+
+  const isZeroAfter = predictedStock !== null && predictedStock === 0;
 
   return (
     <form action={formAction} className="space-y-6">
@@ -156,6 +171,42 @@ export function StockMovementForm({ products, defaultProductId, action }: StockM
           required
           className="w-full px-4 py-3 rounded-2xl bg-slate-950/80 border border-slate-800 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/25 text-sm transition-all duration-200 font-semibold"
         />
+
+        {/* Gerçek Zamanlı Hesaplama & Simülasyon Kartı */}
+        {selectedProduct && (
+          <div className="mt-3 p-4 rounded-2xl bg-slate-900/70 border border-slate-800 text-xs">
+            <span className="font-bold text-slate-300 block mb-2">Canlı Stok Projeksiyonu</span>
+            <div className="flex flex-wrap items-center justify-between gap-3 font-mono">
+              <div className="flex items-center gap-2 text-slate-300">
+                <span>Mevcut: <strong className="text-white">{selectedProduct.currentStock}</strong></span>
+                <span>{movementType === "IN" ? "+" : "-"}</span>
+                <span>İşlem: <strong className={movementType === "IN" ? "text-emerald-400" : "text-rose-400"}>{quantity || 0}</strong></span>
+                <span>=</span>
+                <span>Öngörülen: <strong className="text-base text-white">{predictedStock}</strong> Adet</span>
+              </div>
+
+              <div>
+                {isOutOfStockRisk ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                    ⛔ Yetersiz Stok (Engellendi)
+                  </span>
+                ) : isZeroAfter ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                    ❗ Stok Tükenecek (0 Adet)
+                  </span>
+                ) : isCriticalAfter ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    ⚠️ Kritik Eşik Altına Düşecek
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    ✓ Güvenli Stok Düzeyi
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
         {isOutOfStockRisk && (
           <div className="mt-2.5 p-3.5 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 shadow-sm">
