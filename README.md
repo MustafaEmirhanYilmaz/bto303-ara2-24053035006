@@ -1,4 +1,4 @@
-Canlı adres: [Henüz yayınlanmadı]
+Canlı adres: https://bto303-ara2-24053035006.vercel.app
 
 # Mini Katalog ve Stok Takibi Sistemi (BTÖ-303 Ara Uygulaması 2)
 
