@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { StockMovementForm } from "@/components/StockMovementForm";
 import { createStockMovement } from "@/app/actions/stockActions";
 
+export const dynamic = "force-dynamic";
+
 interface NewStockMovementPageProps {
   searchParams?: Promise<{ productId?: string }>;
 }

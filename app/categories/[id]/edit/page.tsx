@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { CategoryForm } from "@/components/CategoryForm";
 import { updateCategory } from "@/app/actions/categoryActions";
 
+export const dynamic = "force-dynamic";
+
 interface EditCategoryPageProps {
   params: Promise<{ id: string }>;
 }

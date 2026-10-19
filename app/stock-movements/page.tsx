@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Activity, Plus, ArrowLeft, ArrowUpCircle, ArrowDownCircle, AlertCircle } from "lucide-react";
 import prisma from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
 
 export default async function StockMovementsPage() {
   let movements: Array<{

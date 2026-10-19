@@ -6,6 +6,7 @@ import { deleteProduct } from "@/app/actions/productActions";
 import { ProductFilters } from "@/components/ProductFilters";
 import { Prisma } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
 
 interface ProductsPageProps {
   searchParams: Promise<{

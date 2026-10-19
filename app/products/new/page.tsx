@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { ProductForm } from "@/components/ProductForm";
 import { createProduct } from "@/app/actions/productActions";
 
+export const dynamic = "force-dynamic";
+
 export default async function NewProductPage() {
   let categories: Array<{ id: string; name: string }> = [];
 

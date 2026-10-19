@@ -5,6 +5,8 @@ import prisma from "@/lib/prisma";
 import { ProductForm } from "@/components/ProductForm";
 import { updateProduct } from "@/app/actions/productActions";
 
+export const dynamic = "force-dynamic";
+
 interface EditProductPageProps {
   params: Promise<{ id: string }>;
 }

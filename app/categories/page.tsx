@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteCategory } from "@/app/actions/categoryActions";
 
+export const dynamic = "force-dynamic";
 
 export default async function CategoriesPage() {
   let categories: Array<{
